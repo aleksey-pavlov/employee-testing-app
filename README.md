@@ -4,3 +4,4 @@
 #### https://app.swaggerhub.com/apis/aleksey-pavlov/employee-testing-app/1.0
 
 ## Database scheme
+![Screenshot](./docs/database-scheme.jpg)
