@@ -676,11 +676,16 @@ components:
   schemas:
     BasicPostResponse:
       type: object
+      required:
+        - id
       properties:
         id:
           type: integer
     Role:
       type: object
+      required:
+        - id
+        - name
       properties:
         id:
           type: integer
@@ -690,6 +695,8 @@ components:
           example: Admin
     RoleEditable:
       type: object
+      required:
+        - name
       properties:
         name:
           type: string
@@ -700,6 +707,9 @@ components:
         $ref: '#/components/schemas/Role'
     Position:
       type: object
+      required:
+        - id
+        - title
       properties:
         id:
           type: integer
@@ -709,6 +719,8 @@ components:
           example: Programmer
     PositionEditable:
       type: object
+      required:
+        - title
       properties:
         title:
           type: string
@@ -719,6 +731,12 @@ components:
         $ref: '#/components/schemas/Position'
     User:
       type: object
+      required:
+        - id
+        - name
+        - login
+        - positionId
+        - roleId
       properties:
         id: 
           type: integer
@@ -750,6 +768,13 @@ components:
           format: unixtime
     UserEditable:
       type: object
+      required:
+        - name
+        - login
+        - positionId
+        - roleId
+        - password
+        - repassword
       properties:
         name: 
           type: string
@@ -778,26 +803,12 @@ components:
       type: array
       items: 
         $ref: '#/components/schemas/User'
-    TestShort:
-        type: object
-        properties:
-          id: 
-            type: integer
-            example: 43111
-          title:
-            type: string
-          createdAt: 
-            type: integer
-            format: unixtime
-          updatedAt: 
-            type: integer
-            format: unixtime
-    Tests:
-      type: array
-      items:
-        $ref: '#/components/schemas/TestShort'
     Test:
       type: object
+      required:
+        - id
+        - title
+        - questions
       properties:
         id: 
           type: integer
@@ -819,6 +830,27 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/TestCondition'
+    TestShort:
+      type: object
+      required:
+        - id
+        - title
+      properties:
+        id: 
+          type: integer
+          example: 43111
+        title:
+          type: string
+        createdAt: 
+          type: integer
+          format: unixtime
+        updatedAt: 
+          type: integer
+          format: unixtime
+    Tests:
+      type: array
+      items:
+        $ref: '#/components/schemas/TestShort'
     TestEditableErrors:
       type: object
       properties:
@@ -828,6 +860,10 @@ components:
             example: ['InvalidTestTitle', 'TestMustContainQuestions']
     TestQuestion:
       type: object
+      required:
+        - id
+        - body
+        - answers
       properties:
         id:
           type: integer
@@ -840,6 +876,9 @@ components:
             $ref: '#/components/schemas/TestQuestionAnswer'
     TestQuestionAnswer:
       type: object
+      required:
+        - id
+        - body
       properties:
         id: 
           type: integer
@@ -849,6 +888,10 @@ components:
           type: boolean
     TestCondition:
       type: object
+      required:
+        - id
+        - name
+        - value
       properties:
         id: 
           type: integer
@@ -859,34 +902,13 @@ components:
         value:
           type: string
           example: Programmer
-    UserTestShort:
-      type: object
-      properties:
-        testId:
-          $ref: '#/components/schemas/Test/properties/id'
-        testTitle:
-          $ref: '#/components/schemas/Test/properties/title'
-        totalQuestions:
-          type: integer
-          example: 25
-        completedQuestions:
-          type: integer
-          example: 15
-        correctAnswers:
-          type: integer
-          example: 10
-        startedAt:
-          type: integer
-          format: unixtime
-        finisherAt:
-          type: integer
-          format: unixtime
-    UserTestsShort:
-      type: array
-      items:
-        $ref: '#/components/schemas/UserTestShort'
     UserTest:
       type: object
+      required:
+        - testId
+        - testTitle
+        - testProgress
+        - questions
       properties:
         testId:
           $ref: '#/components/schemas/Test/properties/id'
@@ -904,8 +926,35 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/UserTestQuestion'
+    UserTestShort:
+      type: object
+      required:
+        - testId
+        - testTitle
+        - testProgress
+      properties:
+        testId:
+          $ref: '#/components/schemas/Test/properties/id'
+        testTitle:
+          $ref: '#/components/schemas/Test/properties/title'
+        testProgress:
+          $ref: '#/components/schemas/UserTestProgress'
+        startedAt:
+          type: integer
+          format: unixtime
+        finisherAt:
+          type: integer
+          format: unixtime
+    UserTestsShort:
+      type: array
+      items:
+        $ref: '#/components/schemas/UserTestShort'
     UserTestProgress:
       type: object
+      required:
+        - totalQuestions
+        - completedQuestions
+        - correctAnswers
       properties:
         totalQuestions:
           type: integer
@@ -918,34 +967,50 @@ components:
           example: 10
     UserTestQuestion:
       type: object
+      required:
+        - questionId
+        - body
+        - answers
       properties:
         questionId:
           type: integer
+        body:
+          type: string
         answers:
           type: array
           items:
             $ref: '#/components/schemas/UserTestQuestionAnswer'
-        answeredAt:
-          type: integer
-          format: unixtime
     UserTestQuestionAnswer:
       type: object
+      required:
+        - answerId
+        - body
       properties:
         answerId: 
           type: integer
         body:
           type: string
+        answeredAt:
+          type: integer
+          format: unixtime
         selected:
           type: boolean
         isCorrect:
           type: boolean
     UserTestQuestionAnswerPost:
       type: object
+      required:
+        - answerId
       properties:
         answerId: 
           type: integer
     UserTestQuestionAnswerPostResponse:
       type: object
+      required:
+        - questionId
+        - answers
+        - answeredAt
+        - testProgress
       properties:
         questionId:
           type: integer
