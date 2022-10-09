@@ -1,0 +1,964 @@
+openapi: '3.0.2'
+info:
+  title: Employee testing app
+  version: '1.0'
+servers:
+  - url: https://api.server.test/v1
+
+
+paths:
+  /user/login:
+    post:
+      tags:
+        - Authorization
+      summary: Авторизация в системе
+      requestBody:
+        content:
+          application/json:
+            schema: 
+              type: object
+              properties:
+                login: 
+                  type: string
+                password:
+                  type: string
+                  format: password
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  token: 
+                    type: string
+        '401': 
+          description: Unauthorized
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      example: ["IncorrectUserLoginParams"]
+  /user/logout:
+    post:
+      tags:
+        - Authorization
+      summary: Выйти из системы
+      responses:
+        '200':
+          description: OK
+  /roles:
+    get:
+      tags:
+        - Roles
+      summary: 'Получить список ролей пользователя'
+      security:
+        - SessionToken: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roles'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /role:
+    post:
+      tags:
+        - Roles
+      summary: 'Добавить роль пользователя'
+      security:
+        - SessionToken: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoleEditable'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BasicPostResponse'
+        '400':
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  example: ['InvalidRoleName', 'RoleAlreadyExists']
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /role/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      tags:
+        - Roles
+      summary: Получить информацию о роли пользователя
+      security:
+        - SessionToken: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/Role'
+        '404':
+          description: NotFound
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    put:
+      tags:
+        - Roles
+      summary: 'Обновить роль пользователя'
+      security:
+        - SessionToken: []
+      requestBody:
+        content:
+          application/json:
+            schema: 
+              $ref: '#/components/schemas/RoleEditable'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BasicPostResponse'
+        '400':
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  example: ['InvalidRoleName']
+        '404':
+          description: NotFound
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    delete:
+      tags:
+        - Roles
+      summary: 'Удалить роль пользователя'
+      security:
+        - SessionToken: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BasicPostResponse'
+        '404':
+          description: NotFound
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /positions:
+    get:
+      tags:
+        - Positions
+      summary: 'Получить список должностей'
+      security:
+        - SessionToken: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Positions'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /position:
+    post: 
+      tags:
+        - Positions
+      summary: Создать должность
+      security:
+        - SessionToken: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PositionEditable'
+      responses:
+        '200':
+         description: OK
+         content:
+          application/json:
+            schema: 
+              $ref: '#/components/schemas/BasicPostResponse'
+        '400':
+          description: BadRequest
+          content:
+            application/json:
+              schema: 
+                type: object
+                example: ['InvalidPositionTitle', 'PositionAlreadyExists']
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /position/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get: 
+      tags:
+        - Positions
+      summary: Получить информацию по должности пользователей
+      security:
+        - SessionToken: []
+      responses:
+        '200': 
+          description: OK
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/Position'
+        '404':
+          description: NotFound
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    put:
+      tags:
+        - Positions
+      summary: Обновить должность пользователя
+      security:
+        - SessionToken: []
+      requestBody:
+        content:
+          application/json:
+            schema: 
+              $ref: '#/components/schemas/PositionEditable'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/BasicPostResponse'
+        '400':
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  example: ["InvalidPositionTitle"]
+        '404':
+          description: NotFound
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    delete:
+      tags:
+        - Positions
+      summary: Удалить должность
+      security:
+        - SessionToken: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/BasicPostResponse'
+        '404':
+          description: NotFound
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /users:
+    get:
+      tags:
+        - Users
+      summary: Получить список пользователей
+      security:
+        - SessionToken: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Users'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /user: 
+    post:
+      tags:
+        - Users
+      summary: Создать пользователя
+      security:
+        - SessionToken: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserEditable'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BasicPostResponse'
+        '400':
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserEditableErrors'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /user/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: 
+          type: integer
+    get:
+      tags:
+        - Users
+      summary: Запрос профиля пользователя
+      security:
+        - SessionToken: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/User'
+        '404':
+          description: NotFound
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    put:
+      tags:
+        - Users
+      summary: Обновить данные пользователя
+      security:
+        - SessionToken: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserEditable'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/BasicPostResponse'
+        '400':
+          description: BadRequest
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/UserEditableErrors'
+        '404':
+          description: NotFound
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    delete:
+      tags:
+        - Users
+      summary: Удалить пользователя
+      security:
+        - SessionToken: []
+      responses:
+        '200': 
+          description: OK
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/BasicPostResponse'
+        '404':
+          description: NotFound
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /tests:
+    get:
+      tags:
+        - Tests
+      summary: Получить список тестов
+      security:
+        - SessionToken: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tests'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /test:
+    post:
+      tags:
+        - Tests
+      summary: Создать тест
+      security:
+        - SessionToken: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Test'
+      responses:
+        '200': 
+          description: OK
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/BasicPostResponse'
+        '400':
+          description: BadRequest
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/TestEditableErrors'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /test/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      tags:
+        - Tests
+      summary: Получить информацияю по тесту
+      security:
+        - SessionToken: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/Test'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    put:
+      tags:
+        - Tests
+      summary: Обновить данные теста
+      security:
+        - SessionToken: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Test'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/BasicPostResponse'
+        '400':
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestEditableErrors'
+        '404': 
+          description: NotFound
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    delete:
+      tags:
+        - Tests
+      summary: Удалить тест
+      security:
+        - SessionToken: []
+      responses:
+        '200': 
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BasicPostResponse'
+        '404':
+          description: NotFound
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /user/{userId}/tests:
+    get:
+      tags:
+        - UserTests
+      summary: Список тестов пользователя
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200': 
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserTestsShort'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /user/{userId}/test/{testId}:
+    get:
+      tags:
+        - UserTests
+      summary: Посмотреть тест пользователя
+      security:
+        - SessionToken: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: testId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserTest'
+        '404':
+          description: NotFound
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /user/{userId}/test/{testId}/start:
+    post:
+      tags:
+        - UserTests
+      summary: Начать тест
+      security:
+        - SessionToken: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: testId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200': 
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserTest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /user/{userId}/test/{testId}/question/{questionId}:
+    post:
+      tags:
+        - UserTests
+      summary: Отправить ответ по вопросу тест
+      security:
+        - SessionToken: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: testId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: questionId
+          in: path
+          required: true
+          schema: 
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema: 
+              $ref: '#/components/schemas/UserTestQuestionAnswerPost'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/UserTestQuestionAnswerPostResponse'
+        '400':
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserTestQuestionAnswerPostErrors'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /user/{userId}/test/{testId}/finish:
+    post:
+      tags:
+        - UserTests
+      summary: Завершение теста
+      security:
+        - SessionToken: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: testId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200': 
+          description: OK
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+
+
+components:
+  responses:
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errors:
+                type: array
+                items:
+                  example: ["SessionTokenExpired", "InvalidTokenSession"]
+    Forbidden:
+      description: Acces to resource forbidden
+  
+  securitySchemes:
+    SessionToken: 
+      type: apiKey
+      in: header
+      name: X-SESSION-TOKEN
+
+  schemas:
+    BasicPostResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+    Role:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 12
+        name:
+          type: string
+          example: Admin
+    RoleEditable:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Admin
+    Roles:
+      type: array
+      items:
+        $ref: '#/components/schemas/Role'
+    Position:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 15
+        title:
+          type: string
+          example: Programmer
+    PositionEditable:
+      type: object
+      properties:
+        title:
+          type: string
+          example: Programmer
+    Positions:
+      type: array
+      items:
+        $ref: '#/components/schemas/Position'
+    User:
+      type: object
+      properties:
+        id: 
+          type: integer
+          example: 124434
+        name: 
+          type: string
+          example: Alex
+        login: 
+          type: string
+          example: test@test.ru
+        position: 
+          type: string
+          example: Programmer
+        positionId:
+          $ref: '#/components/schemas/Position/properties/id'
+        role: 
+          type: string
+          example: Admin
+        roleId:
+          $ref: '#/components/schemas/Role/properties/id'
+        createdAt: 
+          type: integer
+          format: unixtime
+        updatedAt: 
+          type: integer
+          format: unixtime
+        lastLoginAt:
+          type: integer
+          format: unixtime
+    UserEditable:
+      type: object
+      properties:
+        name: 
+          type: string
+          example: Alex
+        login: 
+          type: string
+          example: test@test.ru
+        positionId: 
+          $ref: '#/components/schemas/Position/properties/id'
+        roleId: 
+          $ref: '#/components/schemas/Role/properties/id'
+        password:
+          type: string
+          format: password
+        repassword:
+          type: string
+          format: password
+    UserEditableErrors:
+      type: object
+      properties:
+        errors: 
+          type: array
+          items:
+            example: ["InvalidUserLogin","UserLoginAlreadyExists","InvalidUserPosition","InvalidUserRole","InvalidPassword"]
+    Users:
+      type: array
+      items: 
+        $ref: '#/components/schemas/User'
+    TestShort:
+        type: object
+        properties:
+          id: 
+            type: integer
+            example: 43111
+          title:
+            type: string
+          createdAt: 
+            type: integer
+            format: unixtime
+          updatedAt: 
+            type: integer
+            format: unixtime
+    Tests:
+      type: array
+      items:
+        $ref: '#/components/schemas/TestShort'
+    Test:
+      type: object
+      properties:
+        id: 
+          type: integer
+          example: 43111
+        title:
+          type: string
+          example: 'SomeTest'
+        createdAt: 
+          type: integer
+          format: unixtime
+        updatedAt: 
+          type: integer
+          format: unixtime
+        questions: 
+          type: array
+          items:
+            $ref: '#/components/schemas/TestQuestion'
+        conditions: 
+          type: array
+          items:
+            $ref: '#/components/schemas/TestCondition'
+    TestEditableErrors:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            example: ['InvalidTestTitle', 'TestMustContainQuestions']
+    TestQuestion:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 123
+        body: 
+          type: string
+        answers: 
+          type: array
+          items: 
+            $ref: '#/components/schemas/TestQuestionAnswer'
+    TestQuestionAnswer:
+      type: object
+      properties:
+        id: 
+          type: integer
+        body: 
+          type: string
+        isCorrect: 
+          type: boolean
+    TestCondition:
+      type: object
+      properties:
+        id: 
+          type: integer
+          example: 65
+        name: 
+          type: string
+          example: Position
+        value:
+          type: string
+          example: Programmer
+    UserTestShort:
+      type: object
+      properties:
+        testId:
+          $ref: '#/components/schemas/Test/properties/id'
+        testTitle:
+          $ref: '#/components/schemas/Test/properties/title'
+        totalQuestions:
+          type: integer
+          example: 25
+        completedQuestions:
+          type: integer
+          example: 15
+        correctAnswers:
+          type: integer
+          example: 10
+        startedAt:
+          type: integer
+          format: unixtime
+        finisherAt:
+          type: integer
+          format: unixtime
+    UserTestsShort:
+      type: array
+      items:
+        $ref: '#/components/schemas/UserTestShort'
+    UserTest:
+      type: object
+      properties:
+        testId:
+          $ref: '#/components/schemas/Test/properties/id'
+        testTitle:
+          $ref: '#/components/schemas/Test/properties/title'
+        testProgress:
+          $ref: '#/components/schemas/UserTestProgress'
+        startedAt:
+          type: integer
+          format: unixtime
+        finisherAt:
+          type: integer
+          format: unixtime
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserTestQuestion'
+    UserTestProgress:
+      type: object
+      properties:
+        totalQuestions:
+          type: integer
+          example: 25
+        completedQuestions:
+          type: integer
+          example: 15
+        correctAnswers:
+          type: integer
+          example: 10
+    UserTestQuestion:
+      type: object
+      properties:
+        questionId:
+          type: integer
+        answers:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserTestQuestionAnswer'
+        answeredAt:
+          type: integer
+          format: unixtime
+    UserTestQuestionAnswer:
+      type: object
+      properties:
+        answerId: 
+          type: integer
+        body:
+          type: string
+        selected:
+          type: boolean
+        isCorrect:
+          type: boolean
+    UserTestQuestionAnswerPost:
+      type: object
+      properties:
+        answerId: 
+          type: integer
+    UserTestQuestionAnswerPostResponse:
+      type: object
+      properties:
+        questionId:
+          type: integer
+        answers:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserTestQuestionAnswer'
+        answeredAt:
+          type: integer
+          format: unixtime
+        testProgress:
+          $ref: '#/components/schemas/UserTestProgress'
+    UserTestQuestionAnswerPostErrors:
+      type: array
+      items:
+        example: ["AnswerByQuestionAlreadyPosted"]
