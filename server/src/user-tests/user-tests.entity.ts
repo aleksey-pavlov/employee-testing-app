@@ -135,14 +135,14 @@ export class UserTestAnswerEntity {
     @PrimaryGeneratedColumn({ name: 'ID' })
     public id: number;
 
+    @Column({ name: 'USERTEST_ID' })
+    public userTestId: number;
+
     @Column({ name: 'ANSWER_ID' })
     public answerId: number;
 
     @Column({ name: 'QUESTION_ID' })
     public questionId: number;
-
-    @Column({ name: 'USERTEST_ID' })
-    public userTestId: number;
 
     @Column({ name: "ANSWEREDAT" })
     public answeredAt: number;

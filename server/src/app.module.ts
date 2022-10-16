@@ -25,6 +25,7 @@ import { UserTestAnswerEntity, UserTestEntity } from './user-tests/user-tests.en
       cache: { 
         duration : 3000
       },
+      synchronize: true,
       entities: [
         RoleEntity,
         UserEntity,
