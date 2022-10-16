@@ -1,18 +1,9 @@
 import { TestEntity, TestQuestionAnswerEntity, TestQuestionEntity } from "src/tests/test.entity";
+import { UserEntity } from "src/users/user.entity";
 import { AfterLoad, BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { UserTestDto, UserTestProgress, UserTestAnswerDto, UsertTestQuestionDto } from "./user-tests.dto";
 
 export type UserTestAnswersEntityById = { [aid: number]: UserTestAnswerEntity }
-
-@Entity('USERS')
-export class UserTestUserEntity {
-
-    @PrimaryGeneratedColumn({ name: 'ID' })
-    public id: number;
-
-    @Column({ name: 'NAME' })
-    public name: string;
-}
 
 @Entity('USERTESTS')
 export class UserTestEntity {
@@ -38,16 +29,15 @@ export class UserTestEntity {
     @Column({ name: 'CORRECT_ANSWERS' })
     public correctAnswers: number;
 
-    @ManyToOne(type => UserTestUserEntity)
+    @ManyToOne(type => UserEntity)
     @JoinColumn({ name: 'USER_ID' })
-    public user: UserTestUserEntity;
+    public user: UserEntity;
 
     @ManyToOne(type => TestEntity)
     @JoinColumn({ name: 'TEST_ID' })
     public test: TestEntity;
 
     @OneToMany(type => UserTestAnswerEntity, answer => answer.userTest)
-    @JoinColumn({name: 'ID'})
     public userAnswers: UserTestAnswerEntity[]
 
     @BeforeInsert()
@@ -161,7 +151,7 @@ export class UserTestAnswerEntity {
     @JoinColumn({ name: 'ANSWER_ID' })
     public answer: TestQuestionAnswerEntity;
 
-    @ManyToOne(type => UserTestAnswerEntity)
+    @ManyToOne(type => UserTestEntity, userTest => userTest.userAnswers, { onDelete: 'CASCADE' })
     @JoinColumn({name: 'USERTEST_ID'})
     public userTest: UserTestEntity
 

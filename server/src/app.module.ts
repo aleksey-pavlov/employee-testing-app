@@ -11,7 +11,7 @@ import { PositionEntity } from './positions/position.entity';
 import { TestsModule } from './tests/tests.module';
 import { TestEntity, TestQuestionAnswerEntity, TestQuestionEntity } from './tests/test.entity';
 import { UserTestsModule } from './user-tests/user-tests.module';
-import { UserTestAnswerEntity, UserTestEntity, UserTestUserEntity } from './user-tests/user-tests.entity';
+import { UserTestAnswerEntity, UserTestEntity } from './user-tests/user-tests.entity';
 
 @Module({
   imports: [
@@ -34,7 +34,6 @@ import { UserTestAnswerEntity, UserTestEntity, UserTestUserEntity } from './user
         TestQuestionAnswerEntity,
         UserTestEntity,
         UserTestAnswerEntity,
-        UserTestUserEntity
       ]
     }),
     RolesModule,

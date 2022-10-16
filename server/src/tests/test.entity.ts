@@ -28,7 +28,6 @@ export class TestEntity {
     }
 
     @OneToMany(type => TestQuestionEntity, question => question.test, { cascade: true, onDelete: 'CASCADE' })
-    @JoinColumn({ name: "ID" })
     public questions: TestQuestionEntity[];
 
     public toTestShortDto(): TestShortDto {
