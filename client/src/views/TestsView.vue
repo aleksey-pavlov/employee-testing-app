@@ -40,7 +40,7 @@
                             <div class="col-auto"><b>Body</b></div>
                             <div class="col">
                                 <input required type="text" class="form-control" v-model="question.body"
-                                    placeholder="Name">
+                                    placeholder="Question">
                             </div>
                             <a href="#" class="col" @click="onRemoveQuestion(qidx)"><i class="bi bi-x-circle"></i></a>
                         </div>
@@ -56,12 +56,12 @@
                                     <div class="col-md-2">
                                         <div class="form-check">
                                             <input type="checkbox" class="form-check-input"
-                                                v-model="answer.isCorrect" placeholder="Name">
+                                                v-model="answer.isCorrect">
                                         </div>
                                     </div>
                                     <div class="col-md-5">
                                         <input required type="text" class="form-control" v-model="answer.body"
-                                            placeholder="Name">
+                                            placeholder="Answer">
                                     </div>
                                     <div class="col">
                                         <a href="#" @click="onRemoveAnswer(qidx, aidx)"><i
