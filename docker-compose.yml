@@ -2,22 +2,26 @@ version: "3.6"
 services:
     database:
       image: original/oracledb:21.3.0xe
+      build: .
       ports:
         - 1521:1521
         - 5500:5500
+      volumes:
+         - ./database/:/opt/oracle/oradata/
+         - ./schemes/:/opt/schemes
       environment:
         - ORACLE_PWD=qwe123
-      volumes:
-        - ./database/:/opt/oracle/oradata
     server: 
       image: original/empapp-server:1.0
       build:
         context: ./server
       ports:
         - 3000:3000
+      environment:
+        - DATABASE_HOST=database
     client:
-      image: nginx:1.23.1
-      volumes:
-        - ./client/dist/:/usr/share/nginx/html/
+      image: original/empapp-client:1.0
+      build:
+        context: ./client
       ports:
         - 8080:80

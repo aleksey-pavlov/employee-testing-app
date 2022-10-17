@@ -12,19 +12,17 @@ import { TestsModule } from './tests/tests.module';
 import { TestEntity, TestQuestionAnswerEntity, TestQuestionEntity } from './tests/test.entity';
 import { UserTestsModule } from './user-tests/user-tests.module';
 import { UserTestAnswerEntity, UserTestEntity } from './user-tests/user-tests.entity';
+import config from './config';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type: 'oracle',
-      host: '127.0.0.1',
-      port: 1521,
-      username: 'empapp',
-      password: 'qwe123',
-      serviceName: 'XEPDB1',
-      cache: { 
-        duration : 3000
-      },
+      host: config.database.host,
+      port: config.database.port,
+      username: config.database.user,
+      password: config.database.pass,
+      serviceName: config.database.name,
       entities: [
         RoleEntity,
         UserEntity,
@@ -45,4 +43,7 @@ import { UserTestAnswerEntity, UserTestEntity } from './user-tests/user-tests.en
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+
+export class AppModule { 
+
+}

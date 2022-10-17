@@ -1,26 +1,16 @@
-FROM node:16.8.0-alpine as build
+FROM node:16.17.0-alpine as build
 WORKDIR /opt
 COPY . ./
 RUN npm install
 RUN npm run build
 
-FROM node:16.8.0-alpine
+FROM node:16.17.0-buster-slim
 WORKDIR /opt
-RUN apk --no-cache add libaio libnsl libc6-compat curl && \
-    cd /tmp && \
-    curl -o instantclient-basiclite.zip https://download.oracle.com/otn_software/linux/instantclient/instantclient-basiclite-linuxx64.zip -SL && \
-    unzip instantclient-basiclite.zip && \
-    mv instantclient*/ /usr/lib && \
-    rm instantclient-basiclite.zip && \
-    ln -s /usr/lib/instantclient/libclntsh.so.21.1 /usr/lib/libclntsh.so && \
-    ln -s /usr/lib/instantclient/libocci.so.21.1 /usr/lib/libocci.so && \
-    ln -s /usr/lib/instantclient/libociicus.so /usr/lib/libociicus.so && \
-    ln -s /usr/lib/instantclient/libnnz21.so /usr/lib/libnnz21.so && \
-    ln -s /usr/lib/libnsl.so.2 /usr/lib/libnsl.so.1 && \
-    ln -s /lib/libc.so.6 /usr/lib/libresolv.so.2 && \
-    ln -s /lib64/ld-linux-x86-64.so.2 /usr/lib/ld-linux-x86-64.so.2
+RUN apt-get update && apt-get -y upgrade && apt-get -y dist-upgrade && apt-get install -y alien libaio1 wget
+RUN wget https://yum.oracle.com/repo/OracleLinux/OL7/oracle/instantclient/x86_64/getPackage/oracle-instantclient19.3-basiclite-19.3.0.0.0-1.x86_64.rpm
+RUN alien -i --scripts oracle-instantclient*.rpm
+RUN rm -f oracle-instantclient19.3*.rpm && apt-get -y autoremove && apt-get -y clean
 
-ENV LD_LIBRARY_PATH /usr/lib/instantclient
 COPY --from=build /opt/dist ./
 COPY --from=build /opt/node_modules ./node_modules
 CMD [ "node", "/opt/main.js" ]

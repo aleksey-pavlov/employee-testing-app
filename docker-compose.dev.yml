@@ -1,0 +1,12 @@
+version: "3.6"
+services:
+    database:
+      image: original/oracledb:21.3.0xe
+      build: .
+      ports:
+        - 1521:1521
+        - 5500:5500
+      environment:
+        - ORACLE_PWD=qwe123
+      volumes:
+        - ./database/:/opt/oracle/oradata
