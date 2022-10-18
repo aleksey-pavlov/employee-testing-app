@@ -3,7 +3,7 @@ import { UserTestsService } from './user-tests.service';
 import { UserTestsController } from './user-tests.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserTestAnswerEntity, UserTestEntity } from './user-tests.entity';
-import { TestEntity, TestQuestionAnswerEntity } from 'src/tests/test.entity';
+import { TestEntity, TestQuestionAnswerEntity, TestQuestionEntity } from 'src/tests/test.entity';
 
 @Module({
   providers: [UserTestsService],
@@ -12,6 +12,7 @@ import { TestEntity, TestQuestionAnswerEntity } from 'src/tests/test.entity';
     UserTestEntity,
     UserTestAnswerEntity,
     TestEntity,
+    TestQuestionEntity,
     TestQuestionAnswerEntity])]
 })
 export class UserTestsModule { }

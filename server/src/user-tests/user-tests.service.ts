@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { BaseModifyResponseDto } from 'src/base/base.dto';
-import { TestEntity, TestQuestionAnswerEntity } from 'src/tests/test.entity';
+import { TestEntity, TestQuestionAnswerEntity, TestQuestionEntity } from 'src/tests/test.entity';
 import { DataSource, EntityNotFoundError, Repository } from 'typeorm';
-import { AnswerAlreadyPostedError, UserTestAlreadyStarted, UserTestDto, UserTestPostAnswerDto, UserTestPostAnswerResponseDto } from './user-tests.dto';
-import { UserTestAnswerEntity, UserTestEntity } from './user-tests.entity';
+import { AnswerAlreadyPostError, UserTestDto, UserTestPostAnswerDto, UserTestPostAnswerResponseDto } from './user-tests.dto';
+import { UserTestAnswerEntity, UserTestEntity, UserTestEntityExtensions } from './user-tests.entity';
 
 @Injectable()
 export class UserTestsService {
@@ -13,6 +12,7 @@ export class UserTestsService {
         @InjectRepository(UserTestEntity) private userTestRepository: Repository<UserTestEntity>,
         @InjectRepository(TestEntity) private testRepository: Repository<TestEntity>,
         @InjectRepository(TestQuestionAnswerEntity) private testAnswerRepository: Repository<TestQuestionAnswerEntity>,
+        @InjectRepository(TestQuestionEntity) private testQuestionRepository: Repository<TestQuestionEntity>,
         @InjectRepository(UserTestAnswerEntity) private userTestAnswerRepository: Repository<UserTestAnswerEntity>,
         private dataSource: DataSource
     ) { }
@@ -69,7 +69,7 @@ export class UserTestsService {
         });
 
         if (startedTest)
-            throw new UserTestAlreadyStarted();
+            return await this.findOne(startedTest.id);
 
         let userTest = new UserTestEntity();
         userTest.testId = test.id;
@@ -80,10 +80,7 @@ export class UserTestsService {
         return await this.findOne(inserted.raw.ID);
     }
 
-    public async commitAnswer(userId: number,
-        userTestId: number,
-        questionId: number,
-        data: UserTestPostAnswerDto): Promise<UserTestPostAnswerResponseDto> {
+    public async commitAnswer(userTestId: number, questionId: number, data: UserTestPostAnswerDto): Promise<UserTestPostAnswerResponseDto> {
 
         let userTest = await this.userTestRepository.findOne(
             {
@@ -99,7 +96,7 @@ export class UserTestsService {
         );
 
         if (existsAnswers)
-            throw new AnswerAlreadyPostedError();
+            throw new AnswerAlreadyPostError();
 
         let answer = await this.testAnswerRepository.findOne({ where: { id: data.answerId } });
 
@@ -115,7 +112,7 @@ export class UserTestsService {
         if (answer.isCorrect)
             userTest.correctAnswers++;
 
-        let tres = await this.dataSource.transaction('READ COMMITTED', async (manager) => {
+        await this.dataSource.transaction('READ COMMITTED', async (manager) => {
             let result = await manager.insert(UserTestAnswerEntity, userAnswer);
             userAnswer.id = result.raw.ID;
             await manager.update(UserTestEntity, { id: userTestId }, {
@@ -124,16 +121,17 @@ export class UserTestsService {
             });
         });
 
-        let answerQuestion = await this.userTestAnswerRepository.findOne(
-            {
-                where: { id: userAnswer.id },
-                relations: { answer: true }
-            });
+        let testQuestion = await this.testQuestionRepository.findOne({
+            where: { id: questionId },
+            relations: { answers: true }
+        });
 
         let response = new UserTestPostAnswerResponseDto();
         response.questionId = questionId;
         response.testProgress = userTest.toUserTestProgressDto();
-        response.answers = [answerQuestion.toUserTestQuestionAnswerDto()];
+        response.answers = UserTestEntityExtensions.toUserTestAnswersDto(
+            testQuestion.answers,
+            { [userAnswer.answerId]: userAnswer });
 
         return response;
     }

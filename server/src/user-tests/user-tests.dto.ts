@@ -23,6 +23,7 @@ export class UsertTestQuestionDto {
     public questionId: number;
     public body: string;
     public answers: UserTestAnswerDto[]
+    public isAnswered: boolean;
 
 }
 
@@ -36,6 +37,7 @@ export class UserTestAnswerDto {
 }
 
 export class UserTestPostAnswerDto {
+
     public answerId: number;
 }
 
@@ -48,12 +50,8 @@ export class UserTestPostAnswerResponseDto {
 }
 
 
-export class AnswerAlreadyPostedError extends Error {
+export class AnswerAlreadyPostError extends Error {
     constructor() { super("AnswerByQuestionAlready"); }
-}
-
-export class UserTestAlreadyStarted extends Error {
-    constructor() { super("UserTestAlreadyStarted"); }
 }
 
 export class UserTestIsFinished extends Error {

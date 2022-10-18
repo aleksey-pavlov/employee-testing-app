@@ -19,6 +19,7 @@
                         <a data-toggle="modal" data-target="#editTestModal" href="#" @click="onEdit(test)"><i
                                 class="bi bi-pencil"></i></a>
                     </td>
+                    <td><a href="#" @click="startTest(test.id)">Start</a></td>
                 </tr>
             </table>
         </div>
@@ -55,8 +56,7 @@
                                     <input type="hidden" v-model="answer.id">
                                     <div class="col-md-2">
                                         <div class="form-check">
-                                            <input type="checkbox" class="form-check-input"
-                                                v-model="answer.isCorrect">
+                                            <input type="checkbox" class="form-check-input" v-model="answer.isCorrect">
                                         </div>
                                     </div>
                                     <div class="col-md-5">
@@ -95,10 +95,11 @@
 import ServerComponent from '../components/ServerComponent.vue'
 import ModalComponent from '../components/ModalComponent.vue';
 import type { TestDto, TestShortDto } from "@/server";
+import AuthComponentVue from '@/components/AuthComponent.vue';
 
 export default {
 
-components: { ModalComponent },
+    components: { ModalComponent },
     data() {
 
         return {
@@ -156,6 +157,17 @@ components: { ModalComponent },
             } catch (e: any) {
                 this.testModelErrors = e.response.data.message;
             }
+        },
+
+        async startTest(testId: number) {
+
+            let userId = AuthComponentVue.getLoggedUserId();
+
+            let resp = await ServerComponent.post(`/user/${userId}/test/${testId}/start`);
+
+            let userTestId = resp.data.id;
+
+            this.$router.push({ path: `/user/testing`, query: { "userTestId": userTestId } });
         },
 
         async onEdit(test: TestShortDto) {

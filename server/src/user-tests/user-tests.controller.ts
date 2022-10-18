@@ -1,7 +1,8 @@
-import { BadRequestException, Body, Controller, Delete, Get, NotFoundException, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
-import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { BadRequestException, Body, Controller, Delete, Get, HttpStatus, NotFoundException, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
+import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { BaseModifyResponseDto } from 'src/base/base.dto';
 import { EntityNotFoundError } from 'typeorm';
-import { UserTestAlreadyStarted, UserTestDto, UserTestIsFinished, UserTestPostAnswerDto, UserTestPostAnswerResponseDto } from './user-tests.dto';
+import { UserTestDto, UserTestIsFinished, UserTestPostAnswerDto, UserTestPostAnswerResponseDto } from './user-tests.dto';
 import { UserTestsService } from './user-tests.service';
 
 @Controller()
@@ -12,22 +13,23 @@ export class UserTestsController {
     @Post('/user/:userId/test/:testId/start')
     @ApiTags('UserTests')
     @ApiBody({ type: UserTestPostAnswerDto })
+    @ApiResponse({ type: UserTestDto })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: HttpStatus[HttpStatus.NOT_FOUND] })
     public async startUserTest(
         @Param('userId', ParseIntPipe) userId: number,
-        @Param('testId', ParseIntPipe) testId: number
-    ) {
+        @Param('testId', ParseIntPipe) testId: number): Promise<UserTestDto> {
+
         try {
             return await this.userTestsService.startTest(userId, testId);
         } catch (e) {
             if (e instanceof EntityNotFoundError)
                 throw new NotFoundException();
-            if (e instanceof UserTestAlreadyStarted)
-                throw new BadRequestException(e.message);
         }
     }
 
     @Get('/user/:userId/tests')
     @ApiTags('UserTests')
+    @ApiResponse({ type: UserTestDto, isArray: true })
     public async getUserTests(@Param('userId', ParseIntPipe) userId: number): Promise<UserTestDto[]> {
 
         return await this.userTestsService.findAll(userId);
@@ -35,9 +37,9 @@ export class UserTestsController {
 
     @Get('/user/:userId/test/:userTestId')
     @ApiTags('UserTests')
-    public async getUserTest(
-        @Param('userId', ParseIntPipe) userId: number,
-        @Param('userTestId', ParseIntPipe) userTestId: number): Promise<UserTestDto> {
+    @ApiResponse({ type: UserTestDto })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: HttpStatus[HttpStatus.NOT_FOUND] })
+    public async getUserTest(@Param('userTestId', ParseIntPipe) userTestId: number): Promise<UserTestDto> {
 
         try {
             return await this.userTestsService.findOne(userTestId);
@@ -50,25 +52,25 @@ export class UserTestsController {
     @Post('/user/:userId/test/:userTestId/finish')
     @ApiTags('UserTests')
     @ApiBody({ type: UserTestPostAnswerDto })
-    public async finishUserTest(
-        @Param('userId', ParseIntPipe) userId: number,
-        @Param('userTestId', ParseIntPipe) userTestId: number
-    ) {
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: HttpStatus[HttpStatus.NOT_FOUND] })
+    public async finishUserTest(@Param('userTestId', ParseIntPipe) userTestId: number) {
+
         return await this.userTestsService.finishTest(userTestId);
     }
 
     @Post('/user/:userId/test/:userTestId/question/:questionId')
     @ApiTags('UserTests')
     @ApiBody({ type: UserTestPostAnswerDto })
+    @ApiResponse({ type: UserTestPostAnswerResponseDto })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: HttpStatus[HttpStatus.NOT_FOUND] })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: HttpStatus[HttpStatus.BAD_REQUEST] })
     public async postTestQuestionAnswer(
-        @Param('userId') userId: number,
         @Param('userTestId') userTestId: number,
         @Param('questionId') questionId: number,
-        @Body() data: UserTestPostAnswerDto
-    ): Promise<UserTestPostAnswerResponseDto> {
+        @Body() data: UserTestPostAnswerDto): Promise<UserTestPostAnswerResponseDto> {
 
         try {
-            return await this.userTestsService.commitAnswer(userId, userTestId, questionId, data);
+            return await this.userTestsService.commitAnswer(userTestId, questionId, data);
         } catch (e) {
             if (e instanceof EntityNotFoundError)
                 throw new NotFoundException()
@@ -80,11 +82,11 @@ export class UserTestsController {
     @Delete('/user/:userId/test/:userTestId')
     @ApiTags('UserTests')
     @ApiBody({ type: UserTestPostAnswerDto })
-    public async removeUserTest(
-        @Param('userId', ParseIntPipe) userId: number,
-        @Param('userTestId', ParseIntPipe) userTestId: number
-    ) {
-        await this.userTestsService.removeTest(userTestId);
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: HttpStatus[HttpStatus.NOT_FOUND] })
+    public async removeUserTest(@Param('userTestId', ParseIntPipe) userTestId: number): Promise<BaseModifyResponseDto> {
+
+        if (await this.userTestsService.removeTest(userTestId))
+            return new BaseModifyResponseDto(userTestId);
     }
 
 }

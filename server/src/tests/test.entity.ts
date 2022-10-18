@@ -75,7 +75,7 @@ export class TestQuestionEntity {
     public body: string;
 
     @ManyToOne(type => TestEntity, test => test.questions)
-    @JoinColumn({ name: "TEST_ID" })
+    @JoinColumn({ name: "TEST_ID"})
     public test: TestEntity;
 
     @OneToMany(type => TestQuestionAnswerEntity, answer => answer.question, { cascade: true, onDelete: 'CASCADE' })

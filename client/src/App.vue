@@ -14,6 +14,7 @@ import { RouterLink, RouterView } from "vue-router";
               <a class="nav-link"><RouterLink to="/positions">Positions</RouterLink></a>
               <a class="nav-link"><RouterLink to="/users">Users</RouterLink></a>
               <a class="nav-link"><RouterLink to="/tests">Tests</RouterLink></a>
+              <a class="nav-link"><RouterLink to="/user/tests">UserTests</RouterLink></a>
             </div>
           </div>
         </div>

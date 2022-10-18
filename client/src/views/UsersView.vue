@@ -133,12 +133,11 @@ export default {
             try {
                 let id = this.userModel.id;
                 await ServerComponent.put(`/user/${id}`, this.userModel);
+                this.loadUsers();
                 this.onSave();
             } catch (e: any) {
                 this.userModelErrors = e.response.data.message;
             }
-
-
         },
 
         onEdit(user: UserDto) {

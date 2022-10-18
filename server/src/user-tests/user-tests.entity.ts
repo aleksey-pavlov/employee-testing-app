@@ -1,12 +1,15 @@
 import { TestEntity, TestQuestionAnswerEntity, TestQuestionEntity } from "src/tests/test.entity";
 import { UserEntity } from "src/users/user.entity";
-import { AfterLoad, BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { AfterLoad, BaseEntity, BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, RelationCount } from "typeorm";
+import { RelationCountAttribute } from "typeorm/query-builder/relation-count/RelationCountAttribute";
 import { UserTestDto, UserTestProgress, UserTestAnswerDto, UsertTestQuestionDto } from "./user-tests.dto";
 
-export type UserTestAnswersEntityById = { [aid: number]: UserTestAnswerEntity }
+
+export type UserAnswersByAnswerId = { [aid: number]: UserTestAnswerEntity }
+export type UserAnswersDict = { [qid: number]: UserAnswersByAnswerId }
 
 @Entity('USERTESTS')
-export class UserTestEntity {
+export class UserTestEntity extends BaseEntity {
 
     @PrimaryGeneratedColumn({ name: 'ID' })
     public id: number;
@@ -45,22 +48,27 @@ export class UserTestEntity {
         this.startedAt = Date.now() / 1000;
     }
 
-    private userAnswersById: UserTestAnswersEntityById;
+    private userAnswersDict: UserAnswersDict;
 
-    public getAnswerById(answerId: number): UserTestAnswerEntity {
+    public getUserAnswersDict(): UserAnswersDict {
 
-        if (this.userAnswersById)
-            return this.userAnswersById[answerId];
+        if (this.userAnswersDict)
+            return this.userAnswersDict;
 
-        this.userAnswersById = {};
+        this.userAnswersDict = {};
 
-        for (let i in this.userAnswers)
-        {
+        for (let i in this.userAnswers) {
+
             let answer = this.userAnswers[i];
-            this.userAnswersById[answer.answerId] = answer; 
+
+            if (!this.userAnswersDict[answer.questionId])
+                this.userAnswersDict[answer.questionId] = {}
+
+
+            this.userAnswersDict[answer.questionId][answer.answerId] = answer;
         }
 
-        return this.userAnswersById[answerId];
+        return this.userAnswersDict;
     }
 
     public toUserTestDto(): UserTestDto {
@@ -76,52 +84,12 @@ export class UserTestEntity {
             this.completedQuestions,
             this.correctAnswers)
 
-        if (this.test)
-            test.questions = this.toUserTestQuestionsDto();
+        if (this.test) {
+            let userAnswers = this.getUserAnswersDict()
+            test.questions = UserTestEntityExtensions.toUserTestQuestionsDto(userAnswers, this.test?.questions);
+        }
 
         return test;
-    }
-
-    public toUserTestQuestionsDto(): UsertTestQuestionDto[] {
-        
-        let questions = [];
-
-        for (let idxQ in this.test?.questions) {
-
-            let question = this.test.questions[idxQ];
-
-            let questionDto = new UsertTestQuestionDto();
-            questionDto.body = question.body;
-            questionDto.questionId = question.id;
-            questionDto.answers = this.toUserTestAnswersDto(question.answers);
-
-            questions.push(questionDto);
-        }
-
-        return questions;
-    }
-
-    public toUserTestAnswersDto(answers: TestQuestionAnswerEntity[]): UserTestAnswerDto[] {
-
-        let answersDto = [];
-
-        for (let idxA in answers) {
-            let answer = answers[idxA];
-            let answerDto = new UserTestAnswerDto();
-            answerDto.answerId = answer.id;
-            answerDto.body = answer.body;
-            answerDto.isCorrect = answer.isCorrect;
-            
-            let userAnswer = this.getAnswerById(answer.id);
-            if ( userAnswer ) {
-                answerDto.answeredAt = userAnswer.answeredAt;
-                answerDto.isSelected = true;
-            }
-
-            answersDto.push(answerDto);
-        }
-
-        return answersDto;
     }
 
     public toUserTestProgressDto(): UserTestProgress {
@@ -151,8 +119,12 @@ export class UserTestAnswerEntity {
     @JoinColumn({ name: 'ANSWER_ID' })
     public answer: TestQuestionAnswerEntity;
 
+    @OneToOne(type => TestQuestionEntity)
+    @JoinColumn({ name: 'QUESTION_ID' })
+    public question: TestQuestionEntity;
+
     @ManyToOne(type => UserTestEntity, userTest => userTest.userAnswers, { onDelete: 'CASCADE' })
-    @JoinColumn({name: 'USERTEST_ID'})
+    @JoinColumn({ name: 'USERTEST_ID' })
     public userTest: UserTestEntity
 
     @BeforeInsert()
@@ -160,15 +132,56 @@ export class UserTestAnswerEntity {
         this.answeredAt = Date.now() / 1000;
     }
 
-    public toUserTestQuestionAnswerDto() {
+}
 
-        let answer = new UserTestAnswerDto();
-        answer.answerId = this.answerId;
-        answer.answeredAt = this.answeredAt;
-        answer.body = this.answer.body;
-        answer.isCorrect = this.answer.isCorrect;
-        answer.isSelected = true;
+export class UserTestEntityExtensions {
 
-        return answer;
+    public static toUserTestQuestionsDto(userAnswers: UserAnswersDict, testQuestions: TestQuestionEntity[]): UsertTestQuestionDto[] {
+
+        let questions = [];
+
+        if (!testQuestions)
+            return questions;
+
+        for (let idxQ in testQuestions) {
+
+            let question = testQuestions[idxQ];
+
+            let questionDto = new UsertTestQuestionDto();
+            questionDto.body = question.body;
+            questionDto.questionId = question.id;
+            questionDto.answers = UserTestEntityExtensions.toUserTestAnswersDto(question.answers, userAnswers[question.id]);
+            questionDto.isAnswered = !!userAnswers[question.id];
+
+            questions.push(questionDto);
+        }
+
+        return questions;
     }
+
+    public static toUserTestAnswersDto(answers: TestQuestionAnswerEntity[], userAnswers: UserAnswersByAnswerId): UserTestAnswerDto[] {
+
+        let answersDto = [];
+
+        for (let idxA in answers) {
+            let answer = answers[idxA];
+            let answerDto = new UserTestAnswerDto();
+            answerDto.answerId = answer.id;
+            answerDto.body = answer.body;
+
+            if (userAnswers)
+                answerDto.isCorrect = answer.isCorrect;
+
+            let userAnswer = userAnswers ? userAnswers[answer.id] : undefined;
+            if (userAnswer) {
+                answerDto.answeredAt = userAnswer.answeredAt;
+                answerDto.isSelected = true;
+            }
+
+            answersDto.push(answerDto);
+        }
+
+        return answersDto;
+    }
+
 }
