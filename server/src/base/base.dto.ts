@@ -1,4 +1,11 @@
+import { ApiProperty } from "@nestjs/swagger";
+
 export class BaseModifyResponseDto 
 {
-    constructor(public id: number) {}
+    @ApiProperty()
+    public id: number;
+
+    constructor(id: number) {
+        this.id = id;
+    }
 }

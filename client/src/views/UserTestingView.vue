@@ -7,8 +7,30 @@
         <div class="row">
             <h5>{{ currentQuestion.body }}</h5>
         </div>
-        <div class="row">
-
+        <div class="row" v-if="userTest.finisherAt">
+            <div class="col">
+                <div class="row mb-2">
+                    <h5> Test correctly
+                        {{Math.round((userTest.testProgress.correctAnswers/userTest.testProgress.totalQuestions)*100)}}% </h5>
+                </div>
+                <div class="row">
+                    <h5>Answers:</h5>
+                </div>
+                <div class="row mb-2 border-bottom" v-for="question of userTest.questions">
+                    <div class="col"><b>{{question.body}}</b></div>
+                    <div class="col">
+                        <div class="row" v-for="answer of question.answers">
+                            <div class="col-md-1">
+                                <i class="bi bi-check2-circle" v-if="answer.isSelected"></i>
+                            </div>
+                            <div class="col" :class="{ 'bg-success': answer.isCorrect, 
+                            'bg-warning': !answer.isCorrect && answer.isSelected }">{{answer.body}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div v-else class="row">
             <form @submit.prevent="null" v-if="currentQuestion.questionId">
                 <div class="form-row mb-1 border-bottom" :class="{ 'bg-success': answer.isCorrect, 
                 'bg-warning': !answer.isCorrect && answer.isSelected }"
@@ -29,36 +51,15 @@
                     @click="onFinish">Finish</button>
             </form>
         </div>
-        <div class="row" v-if="userTest.finisherAt">
-            <div class="col">
-                <div class="row mb-2">
-                    <h5> Test correctly {{(userTest.testProgress.correctAnswers/userTest.testProgress.totalQuestions)*100}}% </h5>
-                </div>
-                <div class="row"><h5>Answers:</h5></div>
-                <div class="row mb-2 border-bottom" v-for="question of userTest.questions">
-                    <div class="col"><b>{{question.body}}</b></div>
-                    <div class="col">
-                        <div class="row" v-for="answer of question.answers">
-                            <div class="col-md-1">
-                                <i class="bi bi-check2-circle" v-if="answer.isSelected"></i>
-                            </div>
-                            <div class="col" :class="{ 'bg-success': answer.isCorrect, 
-                            'bg-warning': !answer.isCorrect && answer.isSelected }">{{answer.body}}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+
     </div>
     <notifications />
 
 </template>
 
 <script lang="ts">
-import ServerComponent from '../components/ServerComponent.vue'
 import ModalComponent from '../components/ModalComponent.vue';
 import type { UserTestDto, UsertTestQuestionDto } from "@/server";
-import AuthComponentVue from '@/components/AuthComponent.vue';
 import type { UserTestPostAnswerResponseDto } from '../../../server/src/user-tests/user-tests.dto';
 
 export default {
@@ -69,7 +70,9 @@ export default {
         return {
             userTest: {} as UserTestDto,
             currentQuestion: {} as UsertTestQuestionDto,
-            selectedAnswerId: 0
+            selectedAnswerId: 0,
+            userId: Number(this.$route.query.userId) || this.$server.getLoggedUserId(),
+            userTestId: Number(this.$route.query.userTestId)
         };
     },
 
@@ -79,10 +82,8 @@ export default {
 
     methods: {
         async loadTest() {
-            let userId = AuthComponentVue.getLoggedUserId();
-            let userTestId = Number(this.$route.query.userTestId)
-            let resp = await ServerComponent
-                .get(`/user/${userId}/test/${userTestId}`);
+            let resp = await this.$server.http
+                .get(`/user/${this.userId}/test/${this.userTestId}`);
 
             this.userTest = resp.data
 
@@ -104,10 +105,10 @@ export default {
 
         async postAnswer() {
             try {
-                let userId = AuthComponentVue.getLoggedUserId();
+                let userId = this.$server.getLoggedUserId();
                 let userTestId = Number(this.$route.query.userTestId)
                 let questionId = this.currentQuestion.questionId;
-                let resp = await ServerComponent.
+                let resp = await this.$server.http.
                     post<UserTestPostAnswerResponseDto>(
                         `/user/${userId}/test/${userTestId}/question/${questionId}`,
                         { answerId: this.selectedAnswerId });
@@ -127,9 +128,9 @@ export default {
         },
 
         async onFinish() {
-            let userId = AuthComponentVue.getLoggedUserId();
+            let userId = this.$server.getLoggedUserId();
             let userTestId = Number(this.$route.query.userTestId)
-            await ServerComponent.
+            await this.$server.http.
                 post(`/user/${userId}/test/${userTestId}/finish`);
 
             await this.loadTest();

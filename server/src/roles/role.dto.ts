@@ -1,21 +1,28 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty } from "class-validator";
 
+export enum RolesEnum {
+    ADMIN = 'Admin',
+    USER = 'User'
+}
+
 export enum RolesErrorsDto {
     InvalidRoleName = "InvalidRoleName",
     RoleAlreadyExists = "RoleAlreadyExists"
 }
 
+export class RoleDto {
 
-export interface RoleDto {
+    @ApiProperty()
+    public id: number;
 
-    id: number;
-    name: string;
+    @ApiProperty()
+    public name: string;
 }
 
 export class RoleUpdateDto {
 
     @ApiProperty()
     @IsNotEmpty({ message: RolesErrorsDto.InvalidRoleName })
-    public name: string;
+    public name: RolesEnum;
 }

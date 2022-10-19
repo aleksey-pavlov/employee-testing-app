@@ -31,9 +31,21 @@ export class UsersService {
         return user.toUserDto();
     }
 
-    public async findByLogin(login: string) {
+    public async findByLogin(login: string): Promise<UserEntity> {
 
-        return await this.usersRepository.findOne({ where: { login: login } });
+        let user = await this.usersRepository.findOne({
+            where: { login: login },
+            relations: { role: true }
+        });
+
+        return user;
+    }
+
+    public async updateLasLoginDate(id: number): Promise<boolean> {
+
+        let result = await this.usersRepository.update({ id: id }, { lastLoginAt: Date.now() / 1000 });
+
+        return result.affected > 0
     }
 
     public async updateOne(id: number, data: UserUpdateDto): Promise<UserDto> {

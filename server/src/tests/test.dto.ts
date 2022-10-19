@@ -8,14 +8,22 @@ export enum TestErrorsDto {
 
 export class TestShortDto {
 
+    @ApiProperty()
     public id: number;
+
+    @ApiProperty()
     public title: string;
+
+    @ApiProperty()
     public createAt: number;
+
+    @ApiProperty()
     public updateAt: number;
 }
 
 export class TestQuestionAnswerDto {
 
+    @ApiProperty()
     @IsNumber()
     public id?: number;
 
@@ -29,6 +37,7 @@ export class TestQuestionAnswerDto {
 
 export class TestQuestionDto {
 
+    @ApiProperty()
     @IsNumber()
     public id?: number;
 
@@ -45,13 +54,17 @@ export class TestQuestionDto {
 
 export class TestDto {
 
+    @ApiProperty()
     public id?: number;
 
     @ApiProperty()
     @IsNotEmpty({ message: TestErrorsDto.InvalidTestTitle })
     public title: string;
 
+    @ApiProperty()
     public createdAt?: number;
+
+    @ApiProperty()
     public updatedAt?: number;
 
     @ApiProperty({ type: TestQuestionDto, isArray: true })

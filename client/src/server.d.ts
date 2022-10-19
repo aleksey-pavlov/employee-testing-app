@@ -3,6 +3,8 @@ import type { RoleDto, RoleUpdateDto } from "../../server/src/roles/role.dto";
 import type { TestDto, TestShortDto } from "../../server/src/tests/test.dto";
 import type { UserDto, UserUpdateDto } from "../../server/src/users/user.dto"
 import type { UserTestDto, UsertTestQuestionDto, UserTestAnswerDto } from "../../server/src/user-tests/user-tests.dto"
+import type { LoginDto, LoggedUserDto } from "../../server/src/auth/auth.dto"
+
 export { 
     PositionDto,
     PositionUpdateDto,
@@ -14,5 +16,7 @@ export {
     UserTestAnswerDto,
     UserTestDto,
     UsertTestQuestionDto,
-    UserUpdateDto
+    UserUpdateDto,
+    LoginDto,
+    LoggedUserDto
 }

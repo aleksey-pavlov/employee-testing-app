@@ -1,25 +1,31 @@
-import { Body, Controller, Delete, Get, HttpStatus, NotFoundException, Param, ParseIntPipe, Post, Put, Query, UsePipes, ValidationPipe } from '@nestjs/common';
-import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpStatus, NotFoundException, Param, ParseIntPipe, Post, Put, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { RolesGuard } from 'src/auth/roles.guard';
 import { BaseModifyResponseDto } from 'src/base/base.dto';
+import { RolesEnum } from 'src/roles/role.dto';
+import { Roles } from 'src/roles/roles.decorator';
 import { EntityNotFoundError } from 'typeorm';
 import { TestDto, TestShortDto } from './test.dto';
 import { TestsService } from './tests.service';
 
 @Controller()
+@UseGuards(JwtAuthGuard, RolesGuard)
+@ApiBearerAuth()
+@ApiTags('Tests')
 export class TestsController {
 
     constructor(private testsService: TestsService) { }
 
     @Get('/tests')
-    @ApiTags('Tests')
     @ApiResponse({ type: TestDto, isArray: true })
     public async getTests(): Promise<TestShortDto[]> {
 
         return await this.testsService.findAll();
     }
-
+    
     @Get('/test/:id')
-    @ApiTags('Tests')
+    @Roles(RolesEnum.ADMIN)
     @ApiResponse({ type: TestDto })
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: HttpStatus[HttpStatus.NOT_FOUND] })
     public async getTest(@Param('id', ParseIntPipe) id: number): Promise<TestDto> {
@@ -33,7 +39,7 @@ export class TestsController {
     }
 
     @Post('/test')
-    @ApiTags('Tests')
+    @Roles(RolesEnum.ADMIN)
     @ApiBody({ type: TestDto })
     @UsePipes(new ValidationPipe())
     @ApiResponse({ type: BaseModifyResponseDto })
@@ -46,7 +52,7 @@ export class TestsController {
     }
 
     @Put('/test/:id')
-    @ApiTags('Tests')
+    @Roles(RolesEnum.ADMIN)
     @UsePipes(new ValidationPipe())
     @ApiBody({ type: TestDto })
     @ApiResponse({ type: BaseModifyResponseDto })
@@ -70,7 +76,7 @@ export class TestsController {
     }
 
     @Delete('/test/:id')
-    @ApiTags('Tests')
+    @Roles(RolesEnum.ADMIN)
     @ApiResponse({ type: BaseModifyResponseDto })
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: HttpStatus[HttpStatus.NOT_FOUND] })
     public async deleteTest(@Param('id', ParseIntPipe) id: number): Promise<BaseModifyResponseDto> {

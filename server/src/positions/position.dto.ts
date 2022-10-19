@@ -8,10 +8,13 @@ export enum PositionErrorsDto
 }
 
 
-export interface PositionDto
+export class PositionDto
 {
-    id?: number;
-    title: string;
+    @ApiProperty()
+    public id?: number;
+
+    @ApiProperty()
+    public title: string;
 }
 
 export class PositionUpdateDto

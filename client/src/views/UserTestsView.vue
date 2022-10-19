@@ -19,14 +19,13 @@
                     <td>{{ test.testTitle }}</td>
                     <td>{{ $unixtimeToDate(test.startedAt) }}</td>
                     <td>{{ $unixtimeToDate(test.finisherAt) }}</td>
-                    <td>{{ (test.testProgress.correctAnswers/test.testProgress.totalQuestions)*100 }}%</td>
-                    <td>
+                    <td>{{ Math.round((test.testProgress.correctAnswers/test.testProgress.totalQuestions)*100) }}%</td>
+                    <td v-if="$server.loggedUserHasAccess($server.Components.USERTESTS, $server.Actions.EDIT)">
                         <a href="#" @click="removeUserTest(test.id, index)"><i class="bi bi-trash"></i></a>
                     </td>
                     <td v-if="!test.finisherAt">
                         <a :href="`/user/testing?userTestId=${test.id}`">
                             <i v-if="!test.finisherAt">Continue</i>
-                            <i v-else>ViewResult</i>
                         </a>
                     </td>
                     <td v-else>
@@ -39,10 +38,8 @@
 </template>
 
 <script lang="ts">
-import ServerComponent from '../components/ServerComponent.vue'
 import ModalComponent from '../components/ModalComponent.vue';
 import type { UserTestDto } from "@/server";
-import AuthComponentVue from '@/components/AuthComponent.vue';
 
 export default {
 
@@ -51,7 +48,8 @@ export default {
 
         return {
             userTests: [] as UserTestDto[],
-            saveTest: () => { }
+            saveTest: () => { },
+            userId: Number(this.$route.query.userId) || this.$server.getLoggedUserId()
         };
     },
 
@@ -60,17 +58,18 @@ export default {
     },
 
     methods: {
+        getUserId() {
 
+        },
         loadTests() {
-            let userId = AuthComponentVue.getLoggedUserId();
-            ServerComponent
-                .get(`/user/${userId}/tests`)
+            this.$server.http
+                .get(`/user/${this.userId}/tests`)
                 .then((response) => (this.userTests = response.data));
         },
         async removeUserTest(userTestId: number, index: number) {
             try {
-                let userId = AuthComponentVue.getLoggedUserId();
-                await ServerComponent
+                let userId = this.$server.getLoggedUserId();
+                await this.$server.http
                     .delete(`/user/${userId}/test/${userTestId}`);
 
                 this.userTests.splice(index, 1);

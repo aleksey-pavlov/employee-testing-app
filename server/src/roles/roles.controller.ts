@@ -1,12 +1,18 @@
-import { Controller, Get, Put, HttpStatus, Query, Body, UsePipes, ValidationPipe, Post, Delete, Param, ParseIntPipe } from '@nestjs/common';
-import { RoleDto, RoleUpdateDto, RolesErrorsDto } from './role.dto';
+import { Controller, Get, Put, HttpStatus, Body, UsePipes, ValidationPipe, Post, Delete, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { RoleDto, RoleUpdateDto, RolesErrorsDto, RolesEnum } from './role.dto';
 import { RolesService } from './roles.service';
-import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { BadRequestException, NotFoundException } from '@nestjs/common/exceptions';
 import { BaseModifyResponseDto } from 'src/base/base.dto';
 import { EntityNotFoundError } from 'typeorm';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { RolesGuard } from 'src/auth/roles.guard';
+import { Roles } from './roles.decorator';
 
-
+@ApiTags('Roles')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(RolesEnum.ADMIN)
 @Controller()
 export class RolesController {
 
@@ -15,13 +21,13 @@ export class RolesController {
     }
 
     @Get('/roles')
-    @ApiTags('Roles')
+    @ApiResponse({ type: RoleDto, isArray: true })
     public async getRoles(): Promise<RoleDto[]> {
         return await this.rolesService.findAll();
     }
 
     @Get('/role/:id')
-    @ApiTags('Roles')
+    @ApiResponse({ type: RoleDto })
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: HttpStatus[HttpStatus.NOT_FOUND] })
     public async getRole(@Param('id', ParseIntPipe) id: number): Promise<RoleDto> {
         let role = await this.rolesService.findOne(id);
@@ -32,7 +38,6 @@ export class RolesController {
     }
 
     @Put('/role/:id')
-    @ApiTags('Roles')
     @UsePipes(new ValidationPipe())
     @ApiBody({ type: RoleUpdateDto })
     @ApiResponse({ type: BaseModifyResponseDto })
@@ -52,11 +57,12 @@ export class RolesController {
     }
 
     @Post('/role')
-    @ApiTags('Roles')
     @UsePipes(new ValidationPipe())
     @ApiBody({ type: RoleUpdateDto })
+    @ApiResponse({ type: BaseModifyResponseDto })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: HttpStatus[HttpStatus.BAD_REQUEST] })
     public async createRole(@Body() data: RoleUpdateDto): Promise<BaseModifyResponseDto> {
+
         let exists = await this.rolesService.findOneByName(data.name)
         if (exists)
             throw new BadRequestException([RolesErrorsDto.RoleAlreadyExists]);
@@ -67,7 +73,7 @@ export class RolesController {
     }
 
     @Delete('/role/:id')
-    @ApiTags('Roles')
+    @ApiResponse({ type: BaseModifyResponseDto })
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: HttpStatus[HttpStatus.NOT_FOUND] })
     public async removeRole(@Param('id', ParseIntPipe) id: number): Promise<BaseModifyResponseDto> {
         if (await this.rolesService.deleteOne(id))

@@ -1,24 +1,32 @@
-import { BadRequestException, Body, Controller, Delete, Get, HttpStatus, NotFoundException, Param, Post, Put, Query, UsePipes, ValidationPipe } from '@nestjs/common';
-import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { BadRequestException, Body, Controller, Delete, Get, HttpStatus, NotFoundException, Param, Post, Put, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { RolesGuard } from 'src/auth/roles.guard';
 import { BaseModifyResponseDto } from 'src/base/base.dto';
+import { RolesEnum } from 'src/roles/role.dto';
+import { Roles } from 'src/roles/roles.decorator';
 import { EntityNotFoundError } from 'typeorm';
 import { PositionDto, PositionErrorsDto, PositionUpdateDto } from './position.dto';
 import { PositionsService } from './positions.service';
 
 @Controller()
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(RolesEnum.ADMIN)
+@ApiBearerAuth()
+@ApiTags('Positions')
 export class PositionsController {
 
     constructor(private positionService: PositionsService) { }
 
     @Get('/positions')
-    @ApiTags('Positions')
+    @ApiResponse({ type: PositionDto, isArray: true })
     public async getPositions(): Promise<PositionDto[]> {
 
         return await this.positionService.findAll();
     }
 
     @Get('/position/:id')
-    @ApiTags('Positions')
+    @ApiResponse({ type: PositionDto })
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: HttpStatus[HttpStatus.NOT_FOUND] })
     public async getPosition(@Param('id') id: number): Promise<PositionDto> {
 
@@ -30,12 +38,11 @@ export class PositionsController {
     }
 
     @Put('/position/:id')
-    @ApiTags('Positions')
     @UsePipes(new ValidationPipe())
     @ApiBody({ type: PositionUpdateDto })
+    @ApiResponse({ type: BaseModifyResponseDto })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: HttpStatus[HttpStatus.BAD_REQUEST] })
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: HttpStatus[HttpStatus.NOT_FOUND] })
-    @ApiResponse({ type: BaseModifyResponseDto })
     public async updatePosition(@Param('id') id: number, @Body() data: PositionUpdateDto): Promise<BaseModifyResponseDto> {
 
         try {
@@ -48,15 +55,13 @@ export class PositionsController {
 
             throw e;
         }
-
     }
 
     @Post('/position')
-    @ApiTags('Positions')
     @UsePipes(new ValidationPipe())
     @ApiBody({ type: PositionUpdateDto })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: HttpStatus[HttpStatus.BAD_REQUEST] })
     @ApiResponse({ type: BaseModifyResponseDto })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: HttpStatus[HttpStatus.BAD_REQUEST] })
     public async createPosition(@Body() data: PositionUpdateDto): Promise<BaseModifyResponseDto> {
 
         let exists = await this.positionService.findOneByTitle(data.title)
@@ -69,9 +74,8 @@ export class PositionsController {
     }
 
     @Delete('/position/:id')
-    @ApiTags('Positions')
-    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: HttpStatus[HttpStatus.NOT_FOUND] })
     @ApiResponse({ type: BaseModifyResponseDto })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: HttpStatus[HttpStatus.NOT_FOUND] })
     public async removePosition(@Param('id') id: number): Promise<BaseModifyResponseDto> {
 
         if (await this.positionService.deleteOne(id))

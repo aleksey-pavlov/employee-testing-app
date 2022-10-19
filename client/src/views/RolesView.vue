@@ -3,7 +3,7 @@
       <div class="row">
         <h5>Roles</h5>
       </div>
-      <div class="row mb-2">
+      <div class="row mb-2" v-if="$server.loggedUserHasAccess($server.Components.ROLES, $server.Actions.EDIT)">
         <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#editRoleModal" @click="onCreate()">+ New</button>
       </div>
       <div class="row">
@@ -11,9 +11,9 @@
           <tr v-for="(role, index) of roles">
               <td>{{ role.id }}</td>
               <td>{{ role.name }}</td>
-              <td>
+              <td v-if="$server.loggedUserHasAccess($server.Components.ROLES, $server.Actions.EDIT)">
                 <a href="#" @click="remove(role.id, index)"><i class="bi bi-trash"></i></a>
-                <a data-toggle="modal" data-target="#editRoleModal" href="#" @click="onEdit(role)"><i class="bi bi-pencil"></i></a>
+                <a class="ml-2" data-toggle="modal" data-target="#editRoleModal" href="#" @click="onEdit(role)"><i class="bi bi-pencil"></i></a>
               </td>
           </tr>
       </table>
@@ -24,7 +24,9 @@
                 <input type="hidden" class="form-control" v-model="roleModel.id">
                 <div class="form-group">
                     <label>Name</label>
-                    <input type="text" class="form-control" v-model="roleModel.name" placeholder="Name">
+                    <select class="form-control" v-model="roleModel.name">
+                        <option v-for="role of rolesEnum" :value="role">{{ role }}</option>
+                    </select>
                 </div>
                 <button class="btn btn-sm btn-primary">Save</button>
                 <span class="text-danger ml-2">
@@ -33,12 +35,13 @@
           </form>
         </modal-component>
   </div>
+  
 </template>
 
 <script lang="ts">
-import ServerComponent from '../components/ServerComponent.vue'
 import ModalComponent from '../components/ModalComponent.vue';
 import type { RoleDto } from '@/server';
+import { RolesEnum } from '@/plugins/acl';
 
 export default {
     components: { ModalComponent },
@@ -47,7 +50,8 @@ export default {
             roles: [] as RoleDto[],
             roleModel: {} as RoleDto ,
             roleFormErrors: '',
-            saveRole: () => { }
+            saveRole: () => { },
+            rolesEnum: RolesEnum
         };
     },
 
@@ -58,13 +62,13 @@ export default {
     methods: {
 
         loadRoles() {
-             ServerComponent
+             this.$server.http
                 .get("/roles")
                 .then((response) => (this.roles = response.data));
         },
 
         remove(id: number, index: number) {
-            ServerComponent
+            this.$server.http
                 .delete(`/role/${id}`)
                 .then((response) => {
                     if (response.status == 200)
@@ -74,7 +78,7 @@ export default {
 
         async createRole() {
             try {
-                let response = await ServerComponent.post('/role', this.roleModel);
+                let response = await this.$server.http.post('/role', this.roleModel);
                 this.roleModel.id = response.data.id;
                 this.roles.unshift(this.roleModel);
                 this.onSave();
@@ -86,7 +90,7 @@ export default {
         async updateRole() {
             try {
                 let id = this.roleModel.id;
-                await ServerComponent.put(`/role/${id}`, this.roleModel);
+                await this.$server.http.put(`/role/${id}`, this.roleModel);
                 this.onSave();
             } catch(e: any) {
                 this.roleFormErrors = e.response.data.message;

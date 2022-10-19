@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BaseModifyResponseDto } from 'src/base/base.dto';
 import { EntityNotFoundError, Repository, TypeORMError } from 'typeorm';
-import { RoleDto, RoleUpdateDto } from './role.dto';
+import { RoleDto, RolesEnum, RoleUpdateDto } from './role.dto';
 import { RoleEntity } from './role.entity';
 
 @Injectable()
@@ -23,7 +23,7 @@ export class RolesService {
         return await this.roleRepository.findOne({ where: { id: id } });
     }
 
-    public async findOneByName(name: string): Promise<RoleDto> {
+    public async findOneByName(name: RolesEnum): Promise<RoleDto> {
 
         return await this.roleRepository.findOne({ where: { name: name } });
     }

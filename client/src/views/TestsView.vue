@@ -3,7 +3,7 @@
         <div class="row">
             <h5>Tests</h5>
         </div>
-        <div class="row mb-2">
+        <div class="row mb-2" v-if="$server.loggedUserHasAccess($server.Components.TESTS, $server.Actions.EDIT)">
             <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#editTestModal"
                 @click="onCreate()">+ New</button>
         </div>
@@ -14,9 +14,9 @@
                     <td>{{ test.title }}</td>
                     <td>{{ $unixtimeToDate(test.createAt) }}</td>
                     <td>{{ $unixtimeToDate(test.updateAt) }}</td>
-                    <td>
+                    <td v-if="$server.loggedUserHasAccess($server.Components.TESTS, $server.Actions.EDIT)">
                         <a href="#" @click="removeTest(test.id, index)"><i class="bi bi-trash"></i></a>
-                        <a data-toggle="modal" data-target="#editTestModal" href="#" @click="onEdit(test)"><i
+                        <a class="ml-2" data-toggle="modal" data-target="#editTestModal" href="#" @click="onEdit(test)"><i
                                 class="bi bi-pencil"></i></a>
                     </td>
                     <td><a href="#" @click="startTest(test.id)">Start</a></td>
@@ -92,10 +92,8 @@
 </template>
 
 <script lang="ts">
-import ServerComponent from '../components/ServerComponent.vue'
 import ModalComponent from '../components/ModalComponent.vue';
 import type { TestDto, TestShortDto } from "@/server";
-import AuthComponentVue from '@/components/AuthComponent.vue';
 
 export default {
 
@@ -117,19 +115,19 @@ export default {
     methods: {
 
         loadTests() {
-            ServerComponent
+            this.$server.http
                 .get("/tests")
                 .then((response) => (this.tests = response.data));
         },
 
         loadTest(id: number) {
-            ServerComponent
+            this.$server.http
                 .get(`/test/${id}`)
                 .then((response) => (this.tests = response.data));
         },
 
         removeTest(id: number, index: number) {
-            ServerComponent
+            this.$server.http
                 .delete(`/test/${id}`)
                 .then((response) => {
                     if (response.status == 200)
@@ -139,7 +137,7 @@ export default {
 
         async createTest() {
             try {
-                let response = await ServerComponent.post('/test', this.testModel);
+                let response = await this.$server.http.post('/test', this.testModel);
                 this.testModel.id = response.data.id;
                 this.loadTests();
                 (this.$refs.testForm as any).close();
@@ -151,7 +149,7 @@ export default {
         async updateTest() {
             try {
                 let id = this.testModel.id;
-                await ServerComponent.put(`/test/${id}`, this.testModel);
+                await this.$server.http.put(`/test/${id}`, this.testModel);
                 (this.$refs.testForm as any).close();
                 this.loadTests();
             } catch (e: any) {
@@ -161,9 +159,9 @@ export default {
 
         async startTest(testId: number) {
 
-            let userId = AuthComponentVue.getLoggedUserId();
+            let userId = this.$server.getLoggedUserId();
 
-            let resp = await ServerComponent.post(`/user/${userId}/test/${testId}/start`);
+            let resp = await this.$server.http.post(`/user/${userId}/test/${testId}/start`);
 
             let userTestId = resp.data.id;
 
@@ -171,7 +169,7 @@ export default {
         },
 
         async onEdit(test: TestShortDto) {
-            let resp = await ServerComponent.get(`/test/${test.id}`);
+            let resp = await this.$server.http.get(`/test/${test.id}`);
             this.testModel = resp.data;
             this.saveTest = this.updateTest;
         },

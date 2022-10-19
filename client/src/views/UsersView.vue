@@ -3,12 +3,23 @@
         <div class="row">
             <h5>Users</h5>
         </div>
-        <div class="row mb-2">
+        <div class="row mb-2" v-if="$server.loggedUserHasAccess($server.Components.USERS, $server.Actions.EDIT)">
             <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#editUserModal"
                 @click="onCreate()">+ New</button>
         </div>
         <div class="row">
             <table class="table table-bordered">
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Login</th>
+                    <th>Role</th>
+                    <th>Position</th>
+                    <th>CreatedAt</th>
+                    <th>UpdatedAt</th>
+                    <th>LastLogindAt</th>
+                    <th></th>
+                </tr>
                 <tr v-for="(user, index) of users">
                     <td>{{ user.id }}</td>
                     <td>{{ user.name }}</td>
@@ -18,10 +29,11 @@
                     <td>{{ $unixtimeToDate(user.createdAt) }}</td>
                     <td>{{ $unixtimeToDate(user.updatedAt) }}</td>
                     <td>{{ $unixtimeToDate(user.lastLoginAt) }}</td>
-                    <td>
+                    <td v-if="$server.loggedUserHasAccess($server.Components.USERS, $server.Actions.EDIT)">
                         <a href="#" @click="removeUser(user.id, index)"><i class="bi bi-trash"></i></a>
-                        <a data-toggle="modal" data-target="#editUserModal" href="#" @click="onEdit(user)"><i
+                        <a class="ml-2" data-toggle="modal" data-target="#editUserModal" href="#" @click="onEdit(user)"><i
                                 class="bi bi-pencil"></i></a>
+                        <a class="ml-2" :href="`/user/tests?userId=${user.id}`">Tests</a>
                     </td>
                 </tr>
             </table>
@@ -68,7 +80,6 @@
 </template>
 
 <script lang="ts">
-import ServerComponent from '../components/ServerComponent.vue'
 import ModalComponent from '../components/ModalComponent.vue';
 import type { UserDto, RoleDto, PositionDto, UserUpdateDto } from '@/server'
 
@@ -92,25 +103,27 @@ export default {
     methods: {
 
         loadRoles() {
-            ServerComponent
+            
+            this.$server.http
                 .get("/roles")
                 .then((response) => (this.roles = response.data));
         },
 
         loadPositions() {
-            ServerComponent
+            this.$server.http
                 .get("/positions")
                 .then((response) => (this.positions = response.data));
         },
 
         loadUsers() {
-            ServerComponent
+            
+            this.$server.http
                 .get("/users")
                 .then((response) => (this.users = response.data));
         },
 
         removeUser(id: number, index: number) {
-            ServerComponent
+            this.$server.http
                 .delete(`/user/${id}`)
                 .then((response) => {
                     if (response.status == 200)
@@ -120,7 +133,7 @@ export default {
 
         async createUser() {
             try {
-                let response = await ServerComponent.post('/user', this.userModel);
+                let response = await this.$server.http.post('/user', this.userModel);
                 this.userModel.id = response.data.id;
                 this.loadUsers();
                 this.onSave();
@@ -132,7 +145,7 @@ export default {
         async updateUser() {
             try {
                 let id = this.userModel.id;
-                await ServerComponent.put(`/user/${id}`, this.userModel);
+                await this.$server.http.put(`/user/${id}`, this.userModel);
                 this.loadUsers();
                 this.onSave();
             } catch (e: any) {

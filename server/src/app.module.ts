@@ -12,7 +12,10 @@ import { TestsModule } from './tests/tests.module';
 import { TestEntity, TestQuestionAnswerEntity, TestQuestionEntity } from './tests/test.entity';
 import { UserTestsModule } from './user-tests/user-tests.module';
 import { UserTestAnswerEntity, UserTestEntity } from './user-tests/user-tests.entity';
+import { AuthModule } from './auth/auth.module';
 import config from './config';
+import { APP_GUARD } from '@nestjs/core';
+import { RolesGuard } from './auth/roles.guard';
 
 @Module({
   imports: [
@@ -38,7 +41,8 @@ import config from './config';
     PositionsModule,
     UsersModule,
     TestsModule,
-    UserTestsModule
+    UserTestsModule,
+    AuthModule
   ],
   controllers: [AppController],
   providers: [AppService],

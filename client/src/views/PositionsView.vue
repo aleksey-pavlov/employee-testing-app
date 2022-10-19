@@ -3,7 +3,7 @@
       <div class="row">
         <h5>Positions</h5>
       </div>
-      <div class="row mb-2">
+      <div class="row mb-2" v-if="$server.loggedUserHasAccess($server.Components.POSITIONS, $server.Actions.EDIT)">
         <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#editPositionModal" @click="onCreate()">+ New</button>
       </div>
       <div class="row">
@@ -11,9 +11,9 @@
           <tr v-for="(position, index) of positions">
               <td>{{ position.id }}</td>
               <td>{{ position.title }}</td>
-              <td>
+              <td v-if="$server.loggedUserHasAccess($server.Components.POSITIONS, $server.Actions.EDIT)">
                 <a href="#" @click="removePosition(position.id, index)"><i class="bi bi-trash"></i></a>
-                <a data-toggle="modal" data-target="#editPositionModal" href="#" @click="onEdit(position)"><i class="bi bi-pencil"></i></a>
+                <a class="ml-2" data-toggle="modal" data-target="#editPositionModal" href="#" @click="onEdit(position)"><i class="bi bi-pencil"></i></a>
               </td>
           </tr>
       </table>
@@ -34,7 +34,6 @@
 </template>
 
 <script lang="ts">
-import ServerComponent from '../components/ServerComponent.vue'
 import ModalComponent from '../components/ModalComponent.vue';
 import type { PositionDto }  from "@/server";
 
@@ -56,13 +55,13 @@ export default {
     methods: {
 
         loadPositions() {
-             ServerComponent
+             this.$server.http
                 .get("/positions")
                 .then((response) => (this.positions = response.data));
         },
 
         removePosition(id: number | undefined, index: number) {
-            ServerComponent
+            this.$server.http
                 .delete(`/position/${id}`)
                 .then((response) => {
                     if (response.status == 200)
@@ -72,7 +71,7 @@ export default {
 
         async createPosition() {
             try {
-                let response = await ServerComponent.post('/position', this.positionModel);
+                let response = await this.$server.http.post('/position', this.positionModel);
                 this.positionModel.id = response.data.id;
                 this.positions.unshift(this.positionModel);
                 this.onSave();
@@ -84,7 +83,7 @@ export default {
         async updatePosition() {
             try {
                 let id = this.positionModel.id;
-                await ServerComponent.put(`/position/${id}`, this.positionModel);
+                await this.$server.http.put(`/position/${id}`, this.positionModel);
                 this.onSave();
             } catch(err: any) {
                 this.positionSaveErrors = err.response.data.message;

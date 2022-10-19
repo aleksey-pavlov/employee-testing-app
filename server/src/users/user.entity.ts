@@ -1,8 +1,8 @@
+import { AuthHelper } from 'src/auth/auth.helper';
 import { PositionEntity } from 'src/positions/position.entity';
 import { RoleEntity } from 'src/roles/role.entity';
 import { BeforeInsert, BeforeUpdate, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { UserDto, UserUpdateDto } from './user.dto';
-import * as crypto from 'crypto';
 
 @Entity('USERS')
 export class UserEntity {
@@ -46,6 +46,7 @@ export class UserEntity {
         this.createdAt = Date.now() / 1000;
     }
 
+    @BeforeInsert()
     @BeforeUpdate()
     setUpdateAt() {
         this.updatedAt = Date.now() / 1000;
@@ -55,7 +56,7 @@ export class UserEntity {
     @BeforeUpdate()
     hashPassword() {
         if (this.password)
-            this.password = crypto.createHash('md5').update(this.password).digest('hex');
+            this.password = AuthHelper.hasPassword(this.password);
     }
 
     public toUserDto(): UserDto {
