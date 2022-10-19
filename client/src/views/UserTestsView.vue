@@ -74,7 +74,7 @@ export default {
 
                 this.userTests.splice(index, 1);
             } catch (e: any) {
-                alert(e.message);
+                this.$notify({ type: 'warn', title: e.message });
             }
 
         }
