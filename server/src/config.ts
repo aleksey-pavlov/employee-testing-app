@@ -6,5 +6,6 @@ export default {
         user: process.env.DATABASE_USER || "empapp",
         pass: process.env.DATABASE_PASS || "qwe123",
         name: process.env.DATABASE_NAME || 'XEPDB1',
-    }
+    },
+    jwtSecret: 'secret'
 };  
