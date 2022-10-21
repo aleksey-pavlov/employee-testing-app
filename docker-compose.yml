@@ -6,7 +6,7 @@ services:
         - 1521:1521
         - 5500:5500
       volumes:
-         - ./database/:/opt/oracle/oradata/
+         - database:/opt/oracle/oradata/
          - ./schemes/:/opt/schemes
       environment:
         - ORACLE_PWD=qwe123
@@ -24,3 +24,6 @@ services:
         context: ./client
       ports:
         - 8080:80
+
+volumes:
+  database: {}
