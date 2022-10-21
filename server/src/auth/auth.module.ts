@@ -11,9 +11,10 @@ import config from 'src/config';
 @Module({
   providers: [AuthService, LocalStrategy, JwtStrategy],
   controllers: [AuthController],
-  imports: [UsersModule, PassportModule, JwtModule.register({
-    secret: config.jwtSecret,
-    signOptions: { expiresIn: '2h' },
-  })]
+  imports: [UsersModule, PassportModule,
+    JwtModule.register({
+      secret: config.jwtSecret,
+      signOptions: { expiresIn: '2h' },
+    })]
 })
 export class AuthModule { }

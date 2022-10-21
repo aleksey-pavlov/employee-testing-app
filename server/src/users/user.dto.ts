@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { isNotEmpty, IsNotEmpty, Matches, ValidateIf } from "class-validator";
+import { IsNotEmpty } from "class-validator";
 import { Match } from "src/base/match.decorator";
 import { RolesEnum } from "src/roles/role.dto";
 

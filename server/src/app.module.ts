@@ -14,8 +14,6 @@ import { UserTestsModule } from './user-tests/user-tests.module';
 import { UserTestAnswerEntity, UserTestEntity } from './user-tests/user-tests.entity';
 import { AuthModule } from './auth/auth.module';
 import config from './config';
-import { APP_GUARD } from '@nestjs/core';
-import { RolesGuard } from './auth/roles.guard';
 
 @Module({
   imports: [

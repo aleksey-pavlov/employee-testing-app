@@ -1,7 +1,6 @@
 import { TestEntity, TestQuestionAnswerEntity, TestQuestionEntity } from "src/tests/test.entity";
 import { UserEntity } from "src/users/user.entity";
-import { AfterLoad, BaseEntity, BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, RelationCount } from "typeorm";
-import { RelationCountAttribute } from "typeorm/query-builder/relation-count/RelationCountAttribute";
+import { BaseEntity, BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { UserTestDto, UserTestProgress, UserTestAnswerDto, UsertTestQuestionDto } from "./user-tests.dto";
 
 

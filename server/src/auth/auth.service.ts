@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { InjectRepository } from '@nestjs/typeorm';
 import { RolesEnum } from 'src/roles/role.dto';
 import { UserDto } from 'src/users/user.dto';
 import { UserEntity } from 'src/users/user.entity';

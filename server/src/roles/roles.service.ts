@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BaseModifyResponseDto } from 'src/base/base.dto';
-import { EntityNotFoundError, Repository, TypeORMError } from 'typeorm';
+import { EntityNotFoundError, Repository } from 'typeorm';
 import { RoleDto, RolesEnum, RoleUpdateDto } from './role.dto';
 import { RoleEntity } from './role.entity';
 

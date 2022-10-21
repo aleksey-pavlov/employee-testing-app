@@ -1,4 +1,4 @@
-import { ApiParam, ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
 import { IsNotEmpty } from "class-validator";
 import { RolesEnum } from "src/roles/role.dto";
