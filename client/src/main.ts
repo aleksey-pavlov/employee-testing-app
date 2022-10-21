@@ -12,7 +12,7 @@ const app = createApp(App)
 
 app.use(Notifications);
 
-app.use(server, { baseUrl: 'http://127.0.0.1:3000' })
+app.use(server, { baseUrl: import.meta.env.VITE_SERVER_URL })
 
 app.use(router)
 
